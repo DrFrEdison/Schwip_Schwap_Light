@@ -6,7 +6,7 @@ source( paste0(getwd(), "/", source.file) )
 
 # spectra ####
 dt$para$substance
-dt$para$i = 4
+dt$para$i = 2
 dt$para$substance[dt$para$i]
 setwd(dt$wd)
 setwd("./Modellvalidierung")
@@ -50,8 +50,8 @@ legend("topright", c(paste0("SL ", dt$para$substance[ dt$para$i]), "Ausmischung"
 
 # PLS para ####
 dt$model.raw$data$Probe == dt$para$substance[dt$para$i]
-dt$para.pls$wlr <- wlr_function(210:280, 210:280, 10); nrow(dt$para.pls$wlr)
-dt$para.pls$wlm <- wlr_function_multi(210:280, 210:280, 10); nrow(dt$para.pls$wlm)
+dt$para.pls$wlr <- wlr_function(200:300, 200:300, 10); nrow(dt$para.pls$wlr)
+dt$para.pls$wlm <- wlr_function_multi(200:300, 200:300, 10); nrow(dt$para.pls$wlm)
 dt$para.pls$wl <- rbind.fill(dt$para.pls$wlm, dt$para.pls$wlr); nrow(dt$para.pls$wl); dt$para.pls$wlr <- NULL; dt$para.pls$wlm <- NULL
 dt$para.pls$ncomp <- 6
 
@@ -98,12 +98,12 @@ head( dat1[order(dat1$mad, decreasing = F) , ] )
 head(dt$pls$lin[ dt$pls$lin$spc != "spc" , ])
 
 # Prediciton ####
-dt$mop$ncomp <- 6
-dt$mop$wl1 <- 220
-dt$mop$wl2 <- 260
-dt$mop$wl3 <- NA
-dt$mop$wl4 <- NA
-dt$mop$spc <- "1st"
+dt$mop$ncomp <- 2
+dt$mop$wl1 <- 230
+dt$mop$wl2 <- 240
+dt$mop$wl3 <- 280
+dt$mop$wl4 <- 290
+dt$mop$spc <- "2nd"
 dt$mop$model <- pls_function(dt$model.raw, dt$para$substance[ dt$para$i ], data.frame(dt$mop$wl1, dt$mop$wl2, dt$mop$wl3, dt$mop$wl4), dt$mop$ncomp, spc = dt$mop$spc)
 dt$mop$model  <- dt$mop$model [[grep(dt$mop$spc, names(dt$mop$model))[1]]][[1]]
 
@@ -146,7 +146,7 @@ par(mfrow = c(length( dt$mop$pred ), 1))
 for(i in 1:length(dt$mop$pred)){
   plot(dt$mop$pred[[ i ]]
        , xlab = "", ylab = dt$para$ylab[ dt$para$i ], main = dt$para$txt$loc.line[ i ]
-       , ylim = dt$para$SOLL[ dt$para$i] * c(85, 105) / 100, axes = F
+       , ylim = dt$para$SOLL[ dt$para$i] * c(95, 105) / 100, axes = F
        , sub = paste("Bias =", dt$mop$bias[ i ]))
   xaxisdate(dt$trs[[ i ]]$data$datetime)
   abline( h = dt$para$eingriff[[ dt$para$i ]], col = "orange", lty = 2 )
@@ -184,7 +184,7 @@ if(length(which(dt$model.overview$beverage == dt$para$beverage & dt$model.overvi
 }
 
 if(length(which(dt$model.overview$beverage == dt$para$beverage & dt$model.overview$Parameter == dt$para$substance[ dt$para$i ])) == 1){
-
+  
   dt$model.overview[which(dt$model.overview$beverage == dt$para$beverage & dt$model.overview$Parameter == dt$para$substance[ dt$para$i ]) , "wl1"] <- dt$mop$wl1
   dt$model.overview[which(dt$model.overview$beverage == dt$para$beverage & dt$model.overview$Parameter == dt$para$substance[ dt$para$i ]) , "wl2"] <- dt$mop$wl2
   dt$model.overview[which(dt$model.overview$beverage == dt$para$beverage & dt$model.overview$Parameter == dt$para$substance[ dt$para$i ]) , "wl3"] <- dt$mop$wl3

@@ -39,15 +39,15 @@ setwd( paste0( dt$wd, "/", "/Rezept") )
 dt$rez <- read.xlsx(grep(".xlsx", dir( paste0( dt$wd, "/", "/Rezept")), value = T)[ length(grep(".xlsx", dir( paste0( dt$wd, "/", "/Rezept")), value = F))])
 dt$rez[ grep("Messparameter", dt$rez[ , 1]): nrow(dt$rez) , ]
 dt$para$SOLL <- c(25.3, 71, 360.4, 85.2)
-dt$para$eingriff <- data.frame( TA = c(dt$para$SOLL[ 1 ] - .2, dt$para$SOLL[ 1 ] + .2)
-                                , Koffein = c(dt$para$SOLL[ 2 ] - 8, dt$para$SOLL[ 2 ] + 8)
+dt$para$eingriff <- data.frame( TA = c(24.04, 26.57)
+                                , Koffein = c(67.95, 74.04)
                                 , Aspartam = c(270.3, 371.21 )
                                 , Acesulfam = c(82.64, 87.76))
 
-dt$para$sperr <- data.frame( TA = c(dt$para$SOLL[ 1 ] - .4, dt$para$SOLL[ 1 ] + .4)
-                             , Koffein = c(dt$para$SOLL[ 2 ] - 10, dt$para$SOLL[ 2 ] + 10)
-                             , Aspartam = c(270.3, 371.21 )
-                             , Acesulfam = c(82.64, 87.76))
+dt$para$sperr <- data.frame( TA = c(NA, NA)
+                             , Koffein = c(NA, NA)
+                             , Aspartam = c(NA, NA)
+                             , Acesulfam = c(NA, NA))
 #
 # # Modelloptimierung
 dir( paste0( dt$wd, "/", "/Modelloptimierung") )
