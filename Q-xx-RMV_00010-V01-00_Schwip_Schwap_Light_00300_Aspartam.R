@@ -4,10 +4,19 @@ dir( pattern = "_val_" )
 source.file <- "Rsource_Schwip_Schwap_Light_mtx_mop_val_V01.R"
 source( paste0(getwd(), "/", source.file) )
 
-# spectra ####
+# para ####
 dt$para$substance
-dt$para$i = 2
+dt$para$i = 3
 dt$para$substance[dt$para$i]
+
+# keep out ####
+keep.out.unsb.model(customer = dt$para$customer
+                    , beverage = dt$para$beverage
+                    , LG = dt_customer$LG[which(dt_customer$line == as.character(dt$para$line))]
+                    , parameter = dt$para$substance[dt$para$i])
+
+
+# spectra ####
 setwd(dt$wd)
 setwd("./Modellvalidierung")
 setwd("./Produktionsdaten")
@@ -28,9 +37,6 @@ dir.create(paste0("./", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$
 setwd(paste0("./", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$substance[dt$para$i]))
 dir.create("Modellmatrix", showWarnings = F)
 setwd("./Modellmatrix")
-
-dt$model <- fread(print(dir(pattern = ".txt")), sep = ";", dec = ",")
-dt$model <- transfer_csv(dt$model)
 
 # Prediction
 dt$pred <- lapply(dt$trs, function( x ) use_model_on_device(customer = dt$para$customer
@@ -62,7 +68,7 @@ dt$pred.lin <- dt$pred.lin - dt$bias.lin
 par( mfrow = c(1,1))
 plot(dt$pred.lin
      , xlab = "", ylab = dt$para$ylab[ dt$para$i ], main = dt$para$txt$loc.line[ dt$para$i ]
-     , ylim = dt$para$SOLL[ dt$para$i] * c(85, 105) / 100, axes = T
+     , ylim = dt$para$SOLL[ dt$para$i] * c(65, 115) / 100, axes = T
      , sub = paste("Bias =", dt$bias))
 points(dt$lin$trs$data[ , grep( substr(dt$para$substance[dt$para$i], 2, nchar(dt$para$substance[dt$para$i])), colnames(dt$lin$trs$data) )], col = "red")
 
@@ -70,20 +76,15 @@ par(mfrow = c(length( dt$pred ), 1))
 for(i in 1:length(dt$pred)){
   plot(dt$pred[[ i ]]
        , xlab = "", ylab = dt$para$ylab[ dt$para$i ], main = dt$para$txt$loc.line[ i ]
-       , ylim = dt$para$SOLL[ dt$para$i] * c(95, 105) / 100, axes = F
+       , ylim = dt$para$SOLL[ dt$para$i] * c(85, 115) / 100, axes = F
        , sub = paste("Bias =", dt$bias[ i ]))
   xaxisdate(dt$trs[[ i ]]$data$datetime)
   abline( h = dt$para$SOLL[ dt$para$i ], col = "darkgreen", lty = 3, lwd = 1.5)
-  abline( h = dt$para$SOLL[ dt$para$i ] + dt$para$eingriff[ dt$para$i ] * c(1, -1), col = "orange", lty = 3, lwd = 1.5)
+  abline( h = dt$para$eingriff[ , dt$para$i ], col = "orange", lty = 3, lwd = 1.5)
   # abline( h = dt$para$SOLL[ dt$para$i ] + dt$para$sperr[ dt$para$i ] * c(1, -1), col = "red", lty = 3, lwd = 1.5)
 }
 
 # Export for damn xlsx ####
-for(i in 1:length(dt$pred)){
-
-
-}
-
 # Modell name ####
 setwd(dt$wd)
 setwd(paste0("./Mastermodell_", dt$para$model.raw.pl))
@@ -97,8 +98,10 @@ setwd(dt$wd)
 setwd("./Modellvalidierung")
 setwd(paste0("./", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$substance[dt$para$i]))
 
+dir( paste0(dt$wd, "/", "Modellvalidierung/", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$substance[2]) )
 dir(path = "D:/OneDrive - Dausch Technologies GmbH/Dokumentation/QM/06_FO_Formblaetter/", pattern = "FO-223")
-file.copy("D:/OneDrive - Dausch Technologies GmbH/Dokumentation/QM/06_FO_Formblaetter/FO-223-V01-0_Validierungstabelle_Mastermodell.xlsx"
+file.copy(paste0(dt$wd, "/", "Modellvalidierung/", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$substance[2], "/"
+                 , "220628_Validierung_PepsiCo_Schwip_Schwap_Light_Koffein_00300_V01_00.xlsx")
           , dt$xlsx$file <- paste0(date(), "_Validierung_", dt$para$customer, "_", dt$para$beverage, "_", dt$para$substance[ dt$para$i ], "_", dt$para$model.raw.pl
                                    , "_V01_00.xlsx")
           , overwrite = F)
