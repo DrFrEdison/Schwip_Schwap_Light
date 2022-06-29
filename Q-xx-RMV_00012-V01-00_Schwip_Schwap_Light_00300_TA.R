@@ -6,7 +6,7 @@ source( paste0(getwd(), "/", source.file) )
 
 # para ####
 dt$para$substance
-dt$para$i = 3
+dt$para$i = 1
 dt$para$substance[dt$para$i]
 
 # keep out ####
@@ -62,25 +62,25 @@ dt$pred <- mapply(function( x, datetime ) ma.date( x = x , time = datetime$data$
 dt$bias <- print( lapply(dt$pred, function( x ) round( bias( median( x , na.rm = T), 0, dt$para$SOLL[ dt$para$i ] , 2), 3)) )
 dt$pred <- mapply(function( x,y ) x + y, x = dt$pred, y = dt$bias, SIMPLIFY = F)
 
-dt$bias.lin <- round( bias( mean( dt$pred.lin, na.rm = T), 0, mean(dt$lin$trs$data[ , grep( substr(dt$para$substance[dt$para$i], 2, nchar(dt$para$substance[dt$para$i])), colnames(dt$lin$trs$data) )])  ), 2)
+dt$bias.lin <- round( bias( mean( dt$pred.lin, na.rm = T), 0, mean(dt$lin$trs$data[ , grep( dt$para$substance[dt$para$i], colnames(dt$lin$trs$data) )])  ), 2)
 dt$pred.lin <- dt$pred.lin - dt$bias.lin
 
 par( mfrow = c(1,1))
 plot(dt$pred.lin
      , xlab = "", ylab = dt$para$ylab[ dt$para$i ], main = dt$para$txt$loc.line[ dt$para$i ]
-     , ylim = dt$para$SOLL[ dt$para$i] * c(65, 115) / 100, axes = T
+     , ylim = dt$para$SOLL[ dt$para$i] * c(85, 115) / 100, axes = T
      , sub = paste("Bias =", dt$bias))
-points(dt$lin$trs$data[ , grep( substr(dt$para$substance[dt$para$i], 2, nchar(dt$para$substance[dt$para$i])), colnames(dt$lin$trs$data) )], col = "red")
+points(dt$lin$trs$data[ , grep( dt$para$substance[dt$para$i], colnames(dt$lin$trs$data) )], col = "red")
 
 par(mfrow = c(length( dt$pred ), 1))
 for(i in 1:length(dt$pred)){
   plot(dt$pred[[ i ]]
        , xlab = "", ylab = dt$para$ylab[ dt$para$i ], main = dt$para$txt$loc.line[ i ]
-       , ylim = dt$para$SOLL[ dt$para$i] * c(85, 115) / 100, axes = F
+       , ylim = dt$para$SOLL[ dt$para$i] * c(95, 105) / 100, axes = F
        , sub = paste("Bias =", dt$bias[ i ]))
   xaxisdate(dt$trs[[ i ]]$data$datetime)
   abline( h = dt$para$SOLL[ dt$para$i ], col = "darkgreen", lty = 3, lwd = 1.5)
-  abline( h = dt$para$eingriff[ , dt$para$i ], col = "orange", lty = 3, lwd = 1.5)
+  abline( h = dt$para$SOLL[ dt$para$i ] + dt$para$eingriff[ dt$para$i ] * c(1, -1), col = "orange", lty = 3, lwd = 1.5)
   # abline( h = dt$para$SOLL[ dt$para$i ] + dt$para$sperr[ dt$para$i ] * c(1, -1), col = "red", lty = 3, lwd = 1.5)
 }
 
@@ -88,10 +88,10 @@ for(i in 1:length(dt$pred)){
 # Modell name ####
 setwd(dt$wd)
 setwd(paste0("./Mastermodell_", dt$para$model.raw.pl))
-dt$para$model.name <- grep(".unsb", grep(  substr(dt$para$substance[dt$para$i], 2, nchar(dt$para$substance[dt$para$i])) , dir(), value = T), value = T)
+dt$para$model.name <- grep("41", grep(  "Sre" , dir(), value = T), value = T)
 dt$para$model.name
 dt$para$model.name <- dt$para$model.name[length(dt$para$model.name)]
-dt$para$model.name <- gsub(".unsb", "", dt$para$model.name)
+dt$para$model.name <- gsub(".41M", "", dt$para$model.name)
 
 # Validation table copy ####
 setwd(dt$wd)
@@ -169,7 +169,7 @@ dt$xlsx$lin <- data.frame(date = tapply(dt$lin$trs$data$date, factor( dt$lin$trs
                           , package = ""
                           , lab_yes_no = NA
                           , LG = tapply(dt$pred.lin, factor( dt$lin$trs$data$Dilution ), mean)
-                          , Lab = tapply(dt$lin$trs$data[ , grep( substr(dt$para$substance[dt$para$i], 2, nchar(dt$para$substance[dt$para$i])), colnames(dt$lin$trs$data) )]
+                          , Lab = tapply(dt$lin$trs$data[ , grep( dt$para$substance[dt$para$i], colnames(dt$lin$trs$data) )]
                                          , factor( dt$lin$trs$data$Dilution ), mean))
 
 dt$xlsx$Linearity <- read.xlsx(dt$xlsx$file, sheet = "Linearity", colNames = T, skipEmptyRows = F, skipEmptyCols = F)

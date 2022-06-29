@@ -4,10 +4,19 @@ dir( pattern = "_val_" )
 source.file <- "Rsource_Schwip_Schwap_Light_mtx_mop_val_V01.R"
 source( paste0(getwd(), "/", source.file) )
 
-# spectra ####
+# para ####
 dt$para$substance
 dt$para$i = 4
 dt$para$substance[dt$para$i]
+
+# keep out ####
+keep.out.unsb.model(customer = dt$para$customer
+                    , beverage = dt$para$beverage
+                    , LG = dt_customer$LG[which(dt_customer$line == as.character(dt$para$line))]
+                    , parameter = dt$para$substance[dt$para$i])
+
+
+# spectra ####
 setwd(dt$wd)
 setwd("./Modellvalidierung")
 setwd("./Produktionsdaten")
@@ -92,62 +101,64 @@ setwd(paste0("./", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$
 dir( paste0(dt$wd, "/", "Modellvalidierung/", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$substance[2]) )
 dir(path = "D:/OneDrive - Dausch Technologies GmbH/Dokumentation/QM/06_FO_Formblaetter/", pattern = "FO-223")
 file.copy(paste0(dt$wd, "/", "Modellvalidierung/", dt$para$val.date, "_", dt$para$model.raw.pl[1], "_", dt$para$substance[2], "/"
-                 , "220628_Validierung_PepsiCo_Schwip_Schwap_Light_Koffein_00300_V01_00.xlsx")
+                 , "220629_Validierung_PepsiCo_Schwip_Schwap_Light_Koffein_00300_V01_00.xlsx")
           , dt$xlsx$file <- paste0(date(), "_Validierung_", dt$para$customer, "_", dt$para$beverage, "_", dt$para$substance[ dt$para$i ], "_", dt$para$model.raw.pl
                                    , "_V01_00.xlsx")
           , overwrite = F)
 
 # Validierungsinfo ####
-dt$xlsx$info <- read.xlsx(dt$xlsx$file, sheet = "Validierungsinfo", colNames = F)
+dt$xlsx$info <- read.xlsx(dt$xlsx$file, sheet = "Validation_info", colNames = F)
 dt$xlsx$info$X1
 dt$xlsx$info$X2 <- c(dt$para$location
                      , dt$para$line
                      , dt$para$beverage
                      , dt$para$beverage
                      , dt$para$substance[ dt$par$i ]
+                     , gsub('"', '', dt$para$unit[ dt$para$i ])
                      , ""
                      , date()
                      , dt$xlsx$file
                      , dt$para$model.name
                      , gsub("\\.", "\\,", as.character( dt$bias[[ i ]]) )
                      , "Ja"
-                     , "Datum, Unterschrift")
+                     , "Date, Signature")
 
 dt$xlsx$wb <- loadWorkbook(dt$xlsx$file)
 dt$xlsx$sheets <- print( sheets(dt$xlsx$wb) )
 
-writeData(dt$xlsx$wb, "Validierungsinfo", dt$xlsx$info, colNames = F)
+writeData(dt$xlsx$wb, "Validation_info", dt$xlsx$info, colNames = F)
 saveWorkbook(dt$xlsx$wb, dt$xlsx$file, overwrite = TRUE)
 
-# Robustheit ####
+# Robustness ####
 dt$xlsx$wb <- loadWorkbook(dt$xlsx$file)
-dt$xlsx$robustheit <- read.xlsx(dt$xlsx$file, sheet = "Robustheit", colNames = T)
-dt$xlsx$robustheit <- read.xlsx(dt$xlsx$file, sheet = "Robustheit", colNames = T
-                                , startRow = dt$xlsx$row <- (which ( dt$xlsx$robustheit[ , 1] == "Lfd. Nr.") + 1)
-                                , skipEmptyCols = F)
+dt$xlsx$Robustness <- read.xlsx(dt$xlsx$file, sheet = "Robustness", colNames = T, skipEmptyRows = F, skipEmptyCols = F)
+dt$xlsx$Robustness <- read.xlsx(dt$xlsx$file, sheet = "Robustness", colNames = T
+                                , startRow = dt$xlsx$row <- (which ( dt$xlsx$Robustness[ , 1] == "Nr.") + 1)
+                                , skipEmptyCols = F, skipEmptyRows = F)
 
-dt$xlsx$maxrow <- nrow(dt$xlsx$robustheit)
-dt$xlsx$robustheit <- dt$xlsx$robustheit[1:length( which( !is.na( dt$pred[[ i ]])) ),]
+dt$xlsx$maxrow <- nrow(dt$xlsx$Robustness)
+dt$xlsx$Robustness <- dt$xlsx$Robustness[1:length( which( !is.na( dt$pred[[ i ]])) ),]
 
-dt$xlsx$robustheit$Lfd..Nr. <- 1 : length( which( !is.na( dt$pred[[ i ]])) )
-dt$xlsx$robustheit$date <- as.Date( dt$trs[[ i ]]$data$datetime, tz = "UTC")[ which( !is.na( dt$pred[[ i ]] ))]
-dt$xlsx$robustheit$time <- strftime(dt$trs[[ i ]]$data$datetime, format = "%H:%M:%S", tz = "UTC")[ which( !is.na( dt$pred[[ i ]] ))]
-dt$xlsx$robustheit$package <- ""
+dt$xlsx$Robustness$Nr. <- 1 : length( which( !is.na( dt$pred[[ i ]])) )
+dt$xlsx$Robustness$date <- as.Date( dt$trs[[ i ]]$data$datetime, tz = "UTC")[ which( !is.na( dt$pred[[ i ]] ))]
+dt$xlsx$Robustness$time <- strftime(dt$trs[[ i ]]$data$datetime, format = "%H:%M:%S", tz = "UTC")[ which( !is.na( dt$pred[[ i ]] ))]
 
-dt$xlsx$robustheit$`Liquiguard.[%]` <- dt$pred[[ i ]][ which( !is.na( dt$pred[[ i ]])) ]
+# LG values
+dt$xlsx$Robustness[ , grep("time", colnames(dt$xlsx$Robustness)) + 2] <- as.numeric(dt$pred[[ i ]][ which( !is.na( dt$pred[[ i ]])) ])
 
-dt$xlsx$robustheit$`Batch.(Sirup)` <- dt$para$Charge.Sirup
-dt$xlsx$robustheit$`IBC.Batch-number` <- dt$para$Charge[ dt$para$i ]
+# Sirup
+dt$xlsx$Robustness$`Batch.(Sirup)` <- ifelse(is.null(dt$para$Charge.Sirup), NA, dt$para$Charge.Sirup)
+dt$xlsx$Robustness$`IBC.Batch-number` <- ifelse(is.null(dt$para$Charge[ dt$para$i ]), NA, dt$para$Charge[ dt$para$i ])
 
-dt$xlsx$robustheit$Target <- dt$para$SOLL[ dt$para$i ]
-head(dt$xlsx$robustheit)
-dt$xlsx$robustheit[ , which( colnames( dt$xlsx$robustheit ) == "Target") - 1] <- dt$para$eingriff[ 1, dt$para$i ]
-dt$xlsx$robustheit[ , which( colnames( dt$xlsx$robustheit ) == "Target") + 1] <- dt$para$eingriff[ 2, dt$para$i ]
+dt$xlsx$Robustness$Target <- dt$para$SOLL[ dt$para$i ]
+head(dt$xlsx$Robustness)
+dt$xlsx$Robustness[ , which( colnames( dt$xlsx$Robustness ) == "Target") - 1] <- dt$para$eingriff[ 1, dt$para$i ]
+dt$xlsx$Robustness[ , which( colnames( dt$xlsx$Robustness ) == "Target") + 1] <- dt$para$eingriff[ 2, dt$para$i ]
 
-dt$xlsx$robustheit <- rbind(dt$xlsx$robustheit
-                            , dt$xlsx$robustheit[ (nrow(dt$xlsx$robustheit) + 1) : dt$xlsx$maxrow , ])
+dt$xlsx$Robustness <- rbind(dt$xlsx$Robustness
+                            , dt$xlsx$Robustness[ (nrow(dt$xlsx$Robustness) + 1) : dt$xlsx$maxrow , ])
 
-writeData(dt$xlsx$wb, "Robustheit", dt$xlsx$robustheit, colNames = F, startRow = dt$xlsx$row + 1)
+writeData(dt$xlsx$wb, "Robustness", dt$xlsx$Robustness, colNames = F, startRow = dt$xlsx$row + 1)
 saveWorkbook(dt$xlsx$wb, dt$xlsx$file, overwrite = TRUE)
 # =WENNS(UND(F11<>"";G11<>"");"yes"; UND(F11="";G11<>"");"noLG";UND(G11="";F11<>"");"noLab")
 # =WENN(UND(G11>0; F11>0);G11-F11;"")
@@ -160,8 +171,17 @@ dt$xlsx$lin <- data.frame(date = tapply(dt$lin$trs$data$date, factor( dt$lin$trs
                           , LG = tapply(dt$pred.lin, factor( dt$lin$trs$data$Dilution ), mean)
                           , Lab = tapply(dt$lin$trs$data[ , grep( substr(dt$para$substance[dt$para$i], 2, nchar(dt$para$substance[dt$para$i])), colnames(dt$lin$trs$data) )]
                                          , factor( dt$lin$trs$data$Dilution ), mean))
-writeClipboard(dt$xlsx$lin$date)
-writeClipboard(as.character(dt$xlsx$lin$time))
-writeClipboard(gsub("\\.", ",", dt$xlsx$lin$LG))
-writeClipboard(gsub("\\.", ",", dt$xlsx$lin$Lab))
 
+dt$xlsx$Linearity <- read.xlsx(dt$xlsx$file, sheet = "Linearity", colNames = T, skipEmptyRows = F, skipEmptyCols = F)
+dt$xlsx$Linearity <- read.xlsx(dt$xlsx$file, sheet = "Linearity", colNames = T
+                               , startRow = dt$xlsx$row <- (which ( dt$xlsx$Linearity[ , 1] == "Nr.") + 1)
+                               , skipEmptyCols = F, skipEmptyRows = F)
+dt$xlsx$Linearity$Nr. <- 1:nrow(dt$xlsx$lin)
+dt$xlsx$Linearity$date <- dt$xlsx$lin$date
+dt$xlsx$Linearity$time <- dt$xlsx$lin$time
+
+dt$xlsx$Linearity[ , grep("time", colnames(dt$xlsx$Linearity)) + 2] <- dt$xlsx$lin$LG
+dt$xlsx$Linearity[ , grep("time", colnames(dt$xlsx$Linearity)) + 3] <- dt$xlsx$lin$Lab
+
+writeData(dt$xlsx$wb, "Linearity", dt$xlsx$Linearity, colNames = F, startRow = dt$xlsx$row + 1)
+saveWorkbook(dt$xlsx$wb, dt$xlsx$file, overwrite = TRUE)
