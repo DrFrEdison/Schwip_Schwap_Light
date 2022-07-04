@@ -154,7 +154,7 @@ keep.out.unsb(model = dt$model.raw, dt$mop$wl1, dt$mop$wl2, dt$mop$wl3, dt$mop$w
 setwd(wd$model[[ 1 ]])
 dt$model.overview <- read_ods("dt_model_overview.ods")
 
-if( !any( dt$model.overview$customer == dt$para$customer & dt$model.overview$beverage == dt$para$beverage & dt$model.overview$Parameter == dt$para$substance[ dt$para$i]) ){
+if( !any( dt$model.overview$customer == dt$para$customer & dt$model.overview$beverage == dt$para$beverage & dt$model.overview$substance == dt$para$substance[ dt$para$i]) ){
   rbind()
 }
   
